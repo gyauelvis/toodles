@@ -1,9 +1,9 @@
 'use client';
-import { MessagType } from "@/types/message-type";
+import { FirestoreMessage } from "@/utils/firebase/type";
 import { useState } from "react";
 import Image from "next/image";
 
-export default function AnnonymousMessage({ prop }: { prop: MessagType }) {
+export default function AnnonymousMessage({ prop }: { prop: FirestoreMessage }) {
     const [isLike, setIsLike] = useState(false);
     const [isDislike, setIsDislikes] = useState(false);
     const [likes, setLikes] = useState(prop.likes);
@@ -43,7 +43,7 @@ export default function AnnonymousMessage({ prop }: { prop: MessagType }) {
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                     <div className="relative aspect-square flex items-center justify-center w-8 h-8 bg-accent/10 border border-accent/20 rounded-full overflow-hidden">
-                        <Image alt="" src={`/avatar/${Math.floor(((Number(prop.id) + Math.random()) % 10))}.png`} width={32} height={32} className="w-5 h-5 object-cover" />
+                        <Image alt="" src={`/avatar/${Math.floor(((prop.likes + prop.dislikes + Math.random()) % 10))}.png`} width={32} height={32} className="w-5 h-5 object-cover" />
                     </div>
                     <div className="flex flex-col">
                         <div className="text-sm font-medium font-space-grotesk">{prop.senderName}</div>

@@ -1,5 +1,5 @@
 
-export const AppNav = () => {
+export const AppNav = ({ name = "COE25" }: { name: string }) => {
     return (
         <header className="flex items-center justify-center border-b border-border border-dashed">
             <nav className="flex items-center w-full max-w-3xl font-space-grotesk justify-between p-4">
@@ -11,7 +11,7 @@ export const AppNav = () => {
                         <path d="M18 28L13 33H23L18 28Z" fill="currentColor" />
                     </svg>
                 </a>
-                <div className="text-lg font-bold ">COE25</div>
+                <div className="text-lg font-bold ">{name}</div>
             </nav>
         </header>
     );

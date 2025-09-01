@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Space_Grotesk } from "next/font/google";
+import { Geist, Space_Grotesk, Unbounded } from "next/font/google";
 import "./globals.css";
+import { IsClassMemberProvider, ClassDataProvider } from "@/context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,6 +12,12 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
 })
+
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+});
 
 export const metadata: Metadata = {
   title: "Toodles",
@@ -24,11 +31,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${spaceGrotesk.variable} antialiased`}
-      >
-        {children}
-      </body>
+      <IsClassMemberProvider>
+        <ClassDataProvider>
+          <body
+            className={`${geistSans.variable} ${spaceGrotesk.variable} ${unbounded.variable} antialiased`}
+          >
+            {children}
+          </body>
+        </ClassDataProvider>
+      </IsClassMemberProvider>
     </html>
   );
 }

@@ -18,6 +18,7 @@
   --color-button: var(--button);
   --font-sans: var(--font-geist-sans);
   --font-space-grotesk: var(--font-space-grotesk);
+  --font-unbounded: var(--font-unbounded);
   --color-accent: var(--accent);
   --color-foreground-muted: var(--foreground-muted);
   --color-skeleton: var(--skeleton);

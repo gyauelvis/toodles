@@ -1,58 +1,61 @@
 'use client';
 
 import { AppNav } from "@/components/app-nav";
-import { useState, useEffect } from "react";
-import { getRandomWord } from "@/action/action";
+import { useState, useEffect, useContext } from "react";
+import { generateRandomName } from "@/utils/random-name";
 import AnnonymousMessage from "@/components/message";
 import ZeroMessages from "@/components/zero-messages";
 import MessageSkeleton from "@/components/message-skeleton";
-import { MessagType } from "@/types/message-type";
+import { IsClassMemberContext, ClassDataContext } from "@/context";
+import { useRouter } from "next/navigation";
+import { getMessagesForClass } from "@/utils/firebase/firebase";
+import { FirestoreMessage } from "@/utils/firebase/type";
+import { Timestamp } from "firebase/firestore";
+import { addMessage } from "@/utils/firebase/firebase";
+import { Toast } from "@/components/toast";
 
 export default function Home() {
   const [message, setMessage] = useState('');
   const [sort, setSort] = useState('latest');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const { isClassMember, setIsClassMember } = useContext(IsClassMemberContext)!;
+  const { classData, setClassData } = useContext(ClassDataContext)!;
+  const [classMessages, setClassMessages] = useState<(FirestoreMessage)[]>([]);
+  const [showToast, setShowToast] = useState({
+    show: false, message: 'Message sent successfully!',
+    type: 'success'
+  });
 
-  const [messageList, setMessageList] = useState<MessagType[]>(
-    [
-      {
-        id: '1',
-        message: "Can't believe we're finally graduating! These last 4 years flew by so fast. Remember when we all got lost during freshman orientation? Good times. 💯",
-        likes: 14,
-        dislikes: 2,
-        createdAt: '2023-10-01',
-        senderName: 'Ratata'
-      },
-      {
-        id: '2',
-        message: "Shoutout to Prof. Garcia for making calculus bearable with his dad jokes. \"What did the zero say to the eight? Nice belt!\" Still makes me laugh. 😂",
-        likes: 27,
-        dislikes: 0,
-        createdAt: '2023-10-02',
-        senderName: 'El Rata 12'
-      }, {
-        id: '3',
-        message: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reprehenderit, exercitationem quo, delectus recusandae sapiente accusantium id blanditiis dolorib',
-        likes: 18,
-        dislikes: 1,
-        createdAt: '2023-10-3',
-        senderName: 'Elvis'
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!classData) return;
+      setIsLoading(true);
+      try {
+        const messages = await getMessagesForClass(classData.id);
+        setClassMessages(messages);
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      } finally {
+        setIsLoading(false);
       }
-    ]
-  )
+    };
+    fetchMessages();
+  }, [classData]);
 
   const sortByLatest = () => {
     setSort('latest');
-    const messageListAlt = [...messageList];
-    const filteredMessages = messageListAlt.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    setMessageList(filteredMessages);
+    const messageListAlt = [...classMessages];
+    const filteredMessages = messageListAlt.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
+    setClassMessages(filteredMessages);
   }
 
   const sortByPopular = () => {
     setSort('popular');
-    const messageListAlt = [...messageList];
+    const messageListAlt = [...classMessages];
     const filteredMessages = messageListAlt.sort((a, b) => b.likes - a.likes);
-    setMessageList(filteredMessages);
+    setClassMessages(filteredMessages);
   }
 
 
@@ -64,16 +67,54 @@ export default function Home() {
 
 
   const sendMessage = async () => {
-    const randomWord = await getRandomWord();
-    const randomNumber = Math.floor(Math.random() * 1000);
-    console.log(randomWord + randomNumber);
+    const randomWord = generateRandomName();
+    const messageData: FirestoreMessage = {
+      message: message,
+      likes: 0,
+      createdAt: Timestamp.now(),
+      dislikes: 0,
+      senderName: randomWord,
+      classId: classData!.id,
+      id: '',
+      isActive: true,
+    }
+    try {
+      setShowToast({
+        show: true, message: 'Sending message...',
+        type: 'loading'
+      });
+      const sent = await addMessage(messageData);
+      if (sent) {
+        setShowToast({
+          show: true, message: 'Message sent successfully!',
+          type: 'success'
+        });
+        setMessage('');
+        setClassMessages(prevMessages => [messageData, ...prevMessages]);
+      }
+    } catch (error) {
+      setShowToast({ type: 'error', message: 'Error sending message', show: true });
+      console.error('Error sending message:', error);
+    }
   }
 
+  useEffect(() => {
+    const fxn = () => {
+      if (!isClassMember && !sessionStorage.getItem('isClassMember')) {
+        router.push('/landing');
+        return <></>
+      }
+    }
+    fxn();
+  }, [isClassMember]);
 
   return (
     <div className="font-sans min-h-screen bg-gradient-to-b from-background to-background/90">
-      <AppNav />
-
+      {classData ? <AppNav name={classData.name} /> : (
+        <div className="flex items-center justify-center w-full h-16 border-b border-border/50 bg-background/80 backdrop-blur-lg">
+          {/* <div className="h-6 w-32 bg-border/50 rounded-full animate-pulse"></div> */}
+        </div>
+      )}
       <div className="w-full py-6 flex flex-col items-center justify-center">
         <div className="max-w-2xl w-full flex flex-col items-center px-4">
 
@@ -105,7 +146,7 @@ export default function Home() {
               <span className="text-xs opacity-60">500</span>
             </div>
 
-            <button onClick={() => sendMessage()} disabled={message.length <= 0} className="px-6 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:scale-100 py-2 text-sm font-bold text-background font-space-grotesk bg-accent hover:bg-accent/90 rounded-full cursor-pointer transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1">
+            <button onClick={() => sendMessage()} disabled={message.length <= 5} className="px-6 disabled:cursor-not-allowed disabled:opacity-20 disabled:hover:scale-100 py-2 text-sm font-bold text-background font-space-grotesk bg-accent hover:bg-accent/90 rounded-full cursor-pointer transition-all transform hover:scale-105 active:scale-95 flex items-center gap-1">
               Send
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -125,7 +166,7 @@ export default function Home() {
           </div>
 
           <div className="text-xs text-foreground-muted">
-            {messageList.length} messages
+            {classMessages.length} messages
           </div>
         </div>
 
@@ -135,15 +176,16 @@ export default function Home() {
             isLoading ? (
               [1, 2, 3].map((_, index) => (
                 <MessageSkeleton key={index} />
-              ))) : !isLoading && messageList.length <= 0 ? (
+              ))) : !isLoading && classMessages.length <= 0 ? (
                 <ZeroMessages />
               ) : (
-              messageList.map((message, index) => (
-                <AnnonymousMessage key={index} prop={message} />
+              classMessages.map((message, index) => (
+                <AnnonymousMessage key={index + message.id} prop={message} />
               ))
             )
           }
         </section>
+        {showToast.show && <Toast isVisible={showToast.show} type={showToast.type as "success" | "loading" | "error" | "info" | "warning" | undefined} message={showToast.message} onClose={() => setShowToast({ ...showToast, show: false })} />}
       </main>
       <footer className="flex items-center justify-center w-full bg-background/50 backdrop-blur-sm border-t border-dashed border-border/50">
         <div className="w-full max-w-2xl flex gap-2 flex-col items-center justify-between px-4 py-2 border-border/50">
