@@ -67,7 +67,7 @@ export const Toast = ({
         <div
             className={`
                 fixed top-20 right-0 transform md:-translate-x-1/2 
-                bg-accent/10 border border-accent/20 text-white 
+                bg-accent/10 border border-accent/20 text-gray-900/40 dark:text-white 
                 py-4 rounded-full shadow-2xl z-50 
                 backdrop-blur-sm
                 flex items-center gap-3 min-w-80 max-w-md

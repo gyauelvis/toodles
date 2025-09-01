@@ -112,7 +112,7 @@ export default function LandingPage() {
           </div>
 
           <div className="mb-12 space-y-6">
-            <h1 className="text-4xl bg-gradient-to-b from-accent to-white bg-clip-text text-transparent font-bold leading-tight font-unbounded">
+            <h1 className="text-4xl bg-gradient-to-b from-accent to-gray-200 dark:to-white bg-clip-text text-transparent font-bold leading-tight font-unbounded">
               Spill It All, Class of &apos; {new Date().getFullYear().toString().slice(2)}!
             </h1>
 
