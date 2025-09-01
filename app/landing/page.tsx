@@ -32,7 +32,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (isClassMember) router.push('/');
-  }, []);
+  }, [isClassMember, router]);
 
 
   interface HandleKeyDownEvent {
@@ -113,11 +113,11 @@ export default function LandingPage() {
 
           <div className="mb-12 space-y-6">
             <h1 className="text-4xl bg-gradient-to-b from-accent to-white bg-clip-text text-transparent font-bold leading-tight font-unbounded">
-              Spill It All, Class of '{new Date().getFullYear().toString().slice(2)}!
+              Spill It All, Class of &apos; {new Date().getFullYear().toString().slice(2)}!
             </h1>
 
             <p className="text-foreground-muted mt-4 font-sans max-w-md leading-relaxed">
-              As we stand on the brink of new beginnings, let's take a moment to share our final thoughts, memories, and dreams. This is your space to leave a lasting mark, a piece of your journey with the class of {new Date().getFullYear()}. No names, just vibes. Let's make it unforgettable.
+              As we stand on the brink of new beginnings, let&apos;s take a moment to share our final thoughts, memories, and dreams. This is your space to leave a lasting mark, a piece of your journey with the class of {new Date().getFullYear()}. No names, just vibes. Let&apos;s make it unforgettable.
             </p>
           </div>
 

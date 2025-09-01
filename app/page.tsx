@@ -19,8 +19,8 @@ export default function Home() {
   const [sort, setSort] = useState('latest');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { isClassMember, setIsClassMember } = useContext(IsClassMemberContext)!;
-  const { classData, setClassData } = useContext(ClassDataContext)!;
+  const { isClassMember } = useContext(IsClassMemberContext)!;
+  const { classData } = useContext(ClassDataContext)!;
   const [classMessages, setClassMessages] = useState<(FirestoreMessage)[]>([]);
   const [showToast, setShowToast] = useState({
     show: false, message: 'Message sent successfully!',
